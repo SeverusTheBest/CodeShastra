@@ -1,7 +1,8 @@
 package anirudhrocks.com.safetyapp;
 
-import android.support.v7.app.AppCompatActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
 
 public class ContactActivity extends AppCompatActivity {
 
@@ -9,5 +10,6 @@ public class ContactActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact);
+        startService(new Intent(this, VolumeKeyUp.class));
     }
 }

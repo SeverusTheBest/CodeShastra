@@ -1,12 +1,18 @@
 package anirudhrocks.com.safetyapp;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -18,6 +24,7 @@ import java.io.IOException;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 
 
@@ -65,7 +72,6 @@ public class ContactActivity extends AppCompatActivity {
 
     public boolean onKeyLongPress(int keyCode,KeyEvent event){
 
-        TextView text;
        text = findViewById(R.id.text1);
         if(keyCode==KeyEvent.KEYCODE_VOLUME_UP) {
                 counter = 0;
@@ -83,15 +89,15 @@ public class ContactActivity extends AppCompatActivity {
                             text.setText("after 5 sec!");
 
 
-                             /*   LocationManager nManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                               LocationManager nManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                                 if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                                     OnGPS();
                                 } else {
                                     getLocation();
-                                }*/
+                                }
                                 String phoneNumber = "9920073998";
                                 try {
-                                    SmsManager.getDefault().sendTextMessage(phoneNumber, null, "Please Help Me SMS! http://maps.google.com/maps?q=\" + geoLocation, null, null);
+                                    SmsManager.getDefault().sendTextMessage(phoneNumber, null, "Please Help Me SMS! http://maps.google.com/maps?q=\" + geoLocation", null, null);
                                     //SmsManager.sendTextMessage(buffer.toString(), null, "I am in a emergency and I need HELP!\nI am currenty not able to provide more information.\ni am at : http://maps.google.com/maps?q=" + geoLocation, null, null);
                                 } catch (Exception e) {
                                     AlertDialog.Builder alertDialogBuilder = new
@@ -145,8 +151,8 @@ public class ContactActivity extends AppCompatActivity {
         }
             return onKeyLongPress(keyCode, event);
         }
-    /*
-    private void getLocation() {
+
+        private void getLocation() {
 
         if (ActivityCompat.checkSelfPermission(
                 ContactActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
@@ -167,7 +173,6 @@ public class ContactActivity extends AppCompatActivity {
 
 
     }
-    */
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -178,7 +183,7 @@ public class ContactActivity extends AppCompatActivity {
         }
     }
 
-/*
+
     private void OnGPS() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Enable GPS").setCancelable(false).setPositiveButton("Yes", new  DialogInterface.OnClickListener() {
@@ -194,7 +199,7 @@ public class ContactActivity extends AppCompatActivity {
         });
         final AlertDialog alertDialog = builder.create();
         alertDialog.show();
-    }*/
+    }
     }
 
 

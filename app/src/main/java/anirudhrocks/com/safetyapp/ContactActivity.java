@@ -1,19 +1,14 @@
 package anirudhrocks.com.safetyapp;
 
-import android.Manifest;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.telephony.SmsManager;
 import android.view.KeyEvent;
 import android.view.View;
@@ -26,20 +21,23 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 
+//=======
+//import android.support.v7.app.AppCompatActivity;
 //import android.support.v7.app.AppCompatActivity;
 //-----------------------
 
 public class ContactActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener {
 
+    private static final int VIDEO_CAPTURED = 1;
     private EditText contactName;
     private EditText contactNumber;
     private Button addBtn;
@@ -51,6 +49,9 @@ public class ContactActivity extends AppCompatActivity implements View.OnClickLi
     private ArrayAdapter<String> adapter;
     private ArrayList<Contact> storedContacts;
     private ContactDbHelper dbHelper;
+
+
+
 
 //    private ContactListAdapter adapter;
 
@@ -66,10 +67,7 @@ public class ContactActivity extends AppCompatActivity implements View.OnClickLi
     private LocationListener locationListener;
     String latitude, longitude;
 
-
     TextView text;
-
-    Context c = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,7 +114,8 @@ public class ContactActivity extends AppCompatActivity implements View.OnClickLi
         // to delete an item
         contactList.setOnItemClickListener(this);
 
-        
+
+
         //startService(new Intent(this, VolumeKeyUp.class));
         dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/picFolder/";
         File newdir = new File(dir);
@@ -203,6 +202,7 @@ public class ContactActivity extends AppCompatActivity implements View.OnClickLi
 
     // while adding see if name and number already exists.
 
+
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             event.startTracking();
@@ -210,57 +210,108 @@ public class ContactActivity extends AppCompatActivity implements View.OnClickLi
         }
         return super.onKeyDown(keyCode, event);
     }
+
+
     @Override
     public boolean onKeyLongPress(int keyCode, KeyEvent event) {
 
+        TextView text;
         text = findViewById(R.id.text1);
         if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            /*   LocationManager nManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                OnGPS();
+            } else {
+                getLocation();
+            }*/
 
-            String phoneNumber = "9920073998";
-            try {
-                SmsManager.getDefault().sendTextMessage(phoneNumber, null, "Please Help Me SMS! http://maps.google.com/maps?q=\"", null, null);
-//              SmsManager.getDefault().sendTextMessage(phoneNumber, null, "Please Help Me SMS! http://maps.google.com/maps?q=\"" + geoLocation, null, null);
-                //SmsManager.sendTextMessage(buffer.toString(), null, "I am in a emergency and I need HELP!\nI am currenty not able to provide more information.\ni am at : http://maps.google.com/maps?q=" + geoLocation, null, null);
-            } catch (Exception e) {
-                AlertDialog.Builder alertDialogBuilder = new
-                        AlertDialog.Builder(ContactActivity.this);
-                AlertDialog dialog = alertDialogBuilder.create();
+            for (Contact contact : storedContacts) {
+                String phoneNumber = contact.getPhoneNumber();
+                try {
+                    SmsManager.getDefault().sendTextMessage(phoneNumber, null, "SMS! Please Help Me...  http://maps.app.goo.gl/htLKGrxg5S1cnPaM9\"", null, null);
+                    //SmsManager.sendTextMessage(buffer.toString(), null, "I am in a emergency and I need HELP!\nI am currently not able to provide more information.\ni am at : http://maps.google.com/maps?q=" + geoLocation, null, null);
+                } catch (Exception e) {
+                    AlertDialog.Builder alertDialogBuilder = new
+                            AlertDialog.Builder(ContactActivity.this);
+                    AlertDialog dialog = alertDialogBuilder.create();
 
-                dialog.setMessage(e.getMessage());
+                    dialog.setMessage(e.getMessage());
 
-                dialog.show();
+                    dialog.show();
+                }
             }
-
             count++;
-            String file = dir + count + ".jpg";
-            File newfile = new File(file);
+            String fileImg = dir + "i" + count + ".jpg";
+            File newfileImg = new File(fileImg);
+//            String fileVid = dir + "v" +count + ".mp4";
+//            File newfileVid = new File(fileVid);
             try {
-                newfile.createNewFile();
+                newfileImg.createNewFile();
+//                newfileVid.createNewFile();
             } catch (IOException e) {
+                e.printStackTrace();
             }
+
             //Uri outputFileUri = Uri.fromFile(newfile);
-            Uri outputFileUri = FileProvider.getUriForFile(ContactActivity.this, BuildConfig.APPLICATION_ID + ".provider", newfile);
-
+            Uri outputFileUriImg = FileProvider.getUriForFile(ContactActivity.this, BuildConfig.APPLICATION_ID + ".provider", newfileImg);
             Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
-
+            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUriImg);
             startActivityForResult(cameraIntent, TAKE_PHOTO_CODE);
+
+
+//            Uri outputFileUriVid = FileProvider.getUriForFile(ContactActivity.this, BuildConfig.APPLICATION_ID + ".provider", newfileVid);
+//            Intent captureVideoIntent = new Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE);
+//            captureVideoIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 10);
+//            captureVideoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
+//            captureVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUriVid);
+//            startActivityForResult(captureVideoIntent, VIDEO_CAPTURED);
+
+            try {
+                System.out.println(outputFileUriImg.getPath()+"==============================");
+                FileInputStream in = new FileInputStream(new File(outputFileUriImg.getEncodedPath()));
+                Bitmap bMap = BitmapFactory.decodeStream(in);
+//                BufferedInputStream bf = new BufferedInputStream(in);
+//                byte[] bMapArray = new byte[bf.available()];
+//                bf.read(bMapArray);
+//                Bitmap bMap = BitmapFactory.decodeByteArray(bMapArray, 0, bMapArray.length);
+
+                System.out.println(bMap+"------------------------------");
+
+                for (Contact contact : storedContacts) {
+                    String phoneNumber = contact.getPhoneNumber();
+                    try {
+                        SmsManager.getDefault().sendTextMessage(phoneNumber, null, "SMS! Please Help Me...  Image: "+bMap, null, null);
+                        //SmsManager.sendTextMessage(buffer.toString(), null, "I am in a emergency and I need HELP!\nI am currently not able to provide more information.\ni am at : http://maps.google.com/maps?q=" + geoLocation, null, null);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+//                        AlertDialog.Builder alertDialogBuilder = new
+//                                AlertDialog.Builder(ContactActivity.this);
+//                        AlertDialog dialog = alertDialogBuilder.create();
+//
+//                        dialog.setMessage(e.getMessage());
+//
+//                        dialog.show();
+                    }
+                }
+//                Settings settings = new Settings();
+//                settings.setUseSystemSending(true);
+//                Transaction transaction = new Transaction(this, settings);
+//                Message message = new Message("Hello!!!!!!!", );
+//                message.setImage(mBitmap);
+//                transaction.sendNewMessage(message, Transaction.NO_THREAD_ID);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+//            SmsManager.getDefault().sendMultimediaMessage(this, outputFileUriImg, );
+
+
 
             Toast.makeText(this, "Volume Up Pressed", Toast.LENGTH_SHORT).show();
             return true;
         }
         return onKeyLongPress(keyCode, event);
-    }
-
-//send msg diff. code
-    private void configureLocationSettings() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.INTERNET}
-                        ,10);
-            }
-            return;
-        }
     }
 
 
@@ -274,23 +325,22 @@ public class ContactActivity extends AppCompatActivity implements View.OnClickLi
 //        }
 //    }
 
-
-    private void OnGPS() {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Enable GPS").setCancelable(false).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-            }
-        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-        final AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-    }
+//    private void OnGPS() {
+//        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//        builder.setMessage("Enable GPS").setCancelable(false).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+//            }
+//        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                dialog.cancel();
+//            }
+//        });
+//        final AlertDialog alertDialog = builder.create();
+//        alertDialog.show();
+//    }
 }
 
 

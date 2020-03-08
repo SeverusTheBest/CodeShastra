@@ -1,9 +1,35 @@
 package anirudhrocks.com.safetyapp;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 
-import android.support.v7.app.AppCompatActivity;
+//import android.support.v7.app.AppCompatActivity;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Camera;
+import android.graphics.ImageFormat;
+import android.graphics.SurfaceTexture;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CameraMetadata;
+import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.Image;
+import android.media.ImageReader;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Message;
+import android.provider.Settings;
+import android.util.Size;
+import android.util.SparseIntArray;
+import android.view.Surface;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -24,19 +50,39 @@ import android.view.KeyEvent;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 
-
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
+//import com.klinker.android.send_message.DeliveredReceiver;
+//import com.android.mms.transaction.TransactionService;
+//import com.klinker.android.send_message.SentReceiver;
+
+import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 
 public class ContactActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener {
 
+    private static final int VIDEO_CAPTURED = 1;
     private EditText contactName;
     private EditText contactNumber;
     private Button addBtn;
@@ -49,23 +95,23 @@ public class ContactActivity extends AppCompatActivity implements View.OnClickLi
     private ArrayList<Contact> storedContacts;
     private ContactDbHelper dbHelper;
 
+
+
+
 //    private ContactListAdapter adapter;
 
     public int counter;
     KeyEvent keyEvent;
     int key;
     //int n=0;
-     String dir;
+    String dir;
     int TAKE_PHOTO_CODE = 0;
     public static int count = 0;
     private static final int REQUEST_LOCATION = 1;
     LocationManager locationManager;
     String latitude, longitude;
 
-
     TextView text;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,25 +130,25 @@ public class ContactActivity extends AppCompatActivity implements View.OnClickLi
         // getAllContacts here.
 //        storedContacts = FileHelper.readData(this);
 //        storedContacts = new ArrayList<>();
-        System.out.println("======================"+dbHelper.getAllContacts().size()+"=========================");
+        System.out.println("======================" + dbHelper.getAllContacts().size() + "=========================");
         storedContacts = dbHelper.getAllContacts();
-        for(Contact contact : dbHelper.getAllContacts()) {
-            System.out.println("======================"+contact.getName()+"=========================");
-            System.out.println("======================"+contact.getPhoneNumber()+"=========================");
+        for (Contact contact : dbHelper.getAllContacts()) {
+            System.out.println("======================" + contact.getName() + "=========================");
+            System.out.println("======================" + contact.getPhoneNumber() + "=========================");
         }
 
 
-        System.out.println("||||||||||||||||||||||||||_________"+storedContacts.size());
+        System.out.println("||||||||||||||||||||||||||_________" + storedContacts.size());
         displayList = new ArrayList<>();
-        if(storedContacts != null && !storedContacts.isEmpty()) {
-            for(Contact contact : storedContacts) {
+        if (storedContacts != null && !storedContacts.isEmpty()) {
+            for (Contact contact : storedContacts) {
                 displayList.add(contact.getName());
             }
         }
-        System.out.println("||||||||||||||||||||||||||_________"+displayList.size());
+        System.out.println("||||||||||||||||||||||||||_________" + displayList.size());
 
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, displayList);
-        if(displayList != null && !displayList.isEmpty()) {
+        if (displayList != null && !displayList.isEmpty()) {
             contactList.setAdapter(adapter);
         }
 
@@ -113,13 +159,12 @@ public class ContactActivity extends AppCompatActivity implements View.OnClickLi
         contactList.setOnItemClickListener(this);
 
 
+
         //startService(new Intent(this, VolumeKeyUp.class));
         dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/picFolder/";
         File newdir = new File(dir);
         newdir.mkdirs();
-
-
-        }
+    }
 
 
     @Override
@@ -137,7 +182,7 @@ public class ContactActivity extends AppCompatActivity implements View.OnClickLi
                     contactList.setAdapter(adapter);
                     adapter.add(contactNameEntered);
 
-                    System.out.println("=========="+contactNameEntered+"---------"+contactNumberEntered);
+                    System.out.println("==========" + contactNameEntered + "---------" + contactNumberEntered);
 
                     // here addContact method.
                     Contact newContact = new Contact(contactNameEntered, contactNumberEntered);
@@ -159,12 +204,12 @@ public class ContactActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
         String nameToBeRemoved = displayList.get(position);
-        System.out.println("-----------------"+nameToBeRemoved+"--------------"+storedContacts.size());
-        if(storedContacts != null && !storedContacts.isEmpty()) {
-            for(Contact contact : storedContacts) {
-                System.out.println("|||||||||||||||||||||||||||||||||||--------------------------------------"+contact.getName());
+        System.out.println("-----------------" + nameToBeRemoved + "--------------" + storedContacts.size());
+        if (storedContacts != null && !storedContacts.isEmpty()) {
+            for (Contact contact : storedContacts) {
+                System.out.println("|||||||||||||||||||||||||||||||||||--------------------------------------" + contact.getName());
 
-                if(nameToBeRemoved.equals(contact.getName())) {
+                if (nameToBeRemoved.equals(contact.getName())) {
                     System.out.println("-------------------------------Delete--------------------------------------");
                     storedContacts.remove(contact);
                     dbHelper.removeContact(contact);
@@ -181,17 +226,17 @@ public class ContactActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     public void toggleAddBtn(ArrayList<Contact> storedContacts) {
-        if(storedContacts != null && !storedContacts.isEmpty() && storedContacts.size() >= 5) {
+        if (storedContacts != null && !storedContacts.isEmpty() && storedContacts.size() >= 5) {
             addBtn.setEnabled(false);
             Toast.makeText(this, "Limit of Contacts full", Toast.LENGTH_LONG).show();
-        } else if(storedContacts != null && !storedContacts.isEmpty() && storedContacts.size() < 5) {
+        } else if (storedContacts != null && !storedContacts.isEmpty() && storedContacts.size() < 5) {
             addBtn.setEnabled(true);
         }
     }
 
     private boolean isExist(String name, String phoneNumber, ArrayList<Contact> storedContacts) {
-        if(storedContacts != null && !storedContacts.isEmpty()) {
-            for(Contact contact : storedContacts) {
+        if (storedContacts != null && !storedContacts.isEmpty()) {
+            for (Contact contact : storedContacts) {
                 return (name.equals(contact.getName()) && phoneNumber.equals(contact.getPhoneNumber()));
             }
         }
@@ -199,108 +244,119 @@ public class ContactActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     // while adding see if name and number already exists.
-}
 
 
-
-
-
-
-
-
-public boolean onKeyDown(int keyCode, KeyEvent event){
-        if(keyCode==KeyEvent.KEYCODE_VOLUME_UP){
-        event.startTracking();
-        return true;
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            event.startTracking();
+            return true;
         }
-        return super.onKeyDown(keyCode,event);
-        }
+        return super.onKeyDown(keyCode, event);
+    }
 
 
-
-@Override
-public boolean onKeyLongPress(int keyCode,KeyEvent event){
+    @Override
+    public boolean onKeyLongPress(int keyCode, KeyEvent event) {
 
         TextView text;
         text = findViewById(R.id.text1);
-        if(keyCode==KeyEvent.KEYCODE_VOLUME_UP) {
-        counter = 0;
-        //n++;
-        text.setText("hello wrld");
-        new CountDownTimer(3000, 1000) {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            /*   LocationManager nManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                OnGPS();
+            } else {
+                getLocation();
+            }*/
 
-public void onTick ( long millisUntilFinished){
-        counter++;
-        }
+            for (Contact contact : storedContacts) {
+                String phoneNumber = contact.getPhoneNumber();
+                try {
+                    SmsManager.getDefault().sendTextMessage(phoneNumber, null, "SMS! Please Help Me...  http://maps.app.goo.gl/htLKGrxg5S1cnPaM9\"", null, null);
+                    //SmsManager.sendTextMessage(buffer.toString(), null, "I am in a emergency and I need HELP!\nI am currently not able to provide more information.\ni am at : http://maps.google.com/maps?q=" + geoLocation, null, null);
+                } catch (Exception e) {
+                    AlertDialog.Builder alertDialogBuilder = new
+                            AlertDialog.Builder(ContactActivity.this);
+                    AlertDialog dialog = alertDialogBuilder.create();
 
-public void onFinish () {
+                    dialog.setMessage(e.getMessage());
 
+                    dialog.show();
+                }
+            }
+            count++;
+            String fileImg = dir + "i" + count + ".jpg";
+            File newfileImg = new File(fileImg);
+//            String fileVid = dir + "v" +count + ".mp4";
+//            File newfileVid = new File(fileVid);
+            try {
+                newfileImg.createNewFile();
+//                newfileVid.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-        text.setText("after 5 sec!");
-
-
-                             /*   LocationManager nManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                                    OnGPS();
-                                } else {
-                                    getLocation();
-                                }*/
-        String phoneNumber = "9920073998";
-        try {
-        SmsManager.getDefault().sendTextMessage(phoneNumber, null, "Please Help Me SMS! http://maps.google.com/maps?q=\" + geoLocation, null, null);
-        //SmsManager.sendTextMessage(buffer.toString(), null, "I am in a emergency and I need HELP!\nI am currenty not able to provide more information.\ni am at : http://maps.google.com/maps?q=" + geoLocation, null, null);
-        } catch (Exception e) {
-        AlertDialog.Builder alertDialogBuilder = new
-        AlertDialog.Builder(ContactActivity.this);
-        AlertDialog dialog = alertDialogBuilder.create();
-
-        dialog.setMessage(e.getMessage());
-
-        dialog.show();
-
-
-        }
-
-        //Toast.makeText(this, "Volume Up Pressed", Toast.LENGTH_SHORT).show();
-        //only to open camera
-        // Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-        // startActivity(intent);
-        // Here, the counter will be incremented each time, and the
-        // picture taken by camera will be stored as 1.jpg,2.jpg
-        // and likewise.
-        count++;
-        String file = dir +count+".jpg";
-        File newfile = new File(file);
-        try {
-        newfile.createNewFile();
-        }
-        catch (IOException e)
-        {
-
-        }
-
-        //Uri outputFileUri = Uri.fromFile(newfile);
-        Uri outputFileUri = FileProvider.getUriForFile(ContactActivity.this, BuildConfig.APPLICATION_ID + ".provider", newfile);
+            //Uri outputFileUri = Uri.fromFile(newfile);
+            Uri outputFileUriImg = FileProvider.getUriForFile(ContactActivity.this, BuildConfig.APPLICATION_ID + ".provider", newfileImg);
+            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUriImg);
+            startActivityForResult(cameraIntent, TAKE_PHOTO_CODE);
 
 
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
+//            Uri outputFileUriVid = FileProvider.getUriForFile(ContactActivity.this, BuildConfig.APPLICATION_ID + ".provider", newfileVid);
+//            Intent captureVideoIntent = new Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE);
+//            captureVideoIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 10);
+//            captureVideoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
+//            captureVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUriVid);
+//            startActivityForResult(captureVideoIntent, VIDEO_CAPTURED);
 
-        startActivityForResult(cameraIntent, TAKE_PHOTO_CODE);
+            try {
+                System.out.println(outputFileUriImg.getPath()+"==============================");
+                FileInputStream in = new FileInputStream(new File(outputFileUriImg.getEncodedPath()));
+                Bitmap bMap = BitmapFactory.decodeStream(in);
+//                BufferedInputStream bf = new BufferedInputStream(in);
+//                byte[] bMapArray = new byte[bf.available()];
+//                bf.read(bMapArray);
+//                Bitmap bMap = BitmapFactory.decodeByteArray(bMapArray, 0, bMapArray.length);
+
+                System.out.println(bMap+"------------------------------");
+
+                for (Contact contact : storedContacts) {
+                    String phoneNumber = contact.getPhoneNumber();
+                    try {
+                        SmsManager.getDefault().sendTextMessage(phoneNumber, null, "SMS! Please Help Me...  Image: "+bMap, null, null);
+                        //SmsManager.sendTextMessage(buffer.toString(), null, "I am in a emergency and I need HELP!\nI am currently not able to provide more information.\ni am at : http://maps.google.com/maps?q=" + geoLocation, null, null);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+//                        AlertDialog.Builder alertDialogBuilder = new
+//                                AlertDialog.Builder(ContactActivity.this);
+//                        AlertDialog dialog = alertDialogBuilder.create();
+//
+//                        dialog.setMessage(e.getMessage());
+//
+//                        dialog.show();
+                    }
+                }
+//                Settings settings = new Settings();
+//                settings.setUseSystemSending(true);
+//                Transaction transaction = new Transaction(this, settings);
+//                Message message = new Message("Hello!!!!!!!", );
+//                message.setImage(mBitmap);
+//                transaction.sendNewMessage(message, Transaction.NO_THREAD_ID);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+//            SmsManager.getDefault().sendMultimediaMessage(this, outputFileUriImg, );
 
 
-        }
-
-
-        }.start();
-
-        Toast.makeText(this, "Volume Up Pressed", Toast.LENGTH_SHORT).show();
-        text.setText("hello world");
-        return true;
+            Toast.makeText(this, "Volume Up Pressed", Toast.LENGTH_SHORT).show();
+            text.setText("hello world");
+            return true;
 
         }
         return onKeyLongPress(keyCode, event);
-        }
+    }
 
 
 
@@ -329,14 +385,14 @@ public void onFinish () {
     }
     */
 
-@Override
-protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == TAKE_PHOTO_CODE && resultCode == RESULT_OK) {
-        Log.d("CameraDemo", "Pic saved");
+            Log.d("CameraDemo", "Pic saved");
         }
-        }
+    }
 
 /*
     private void OnGPS() {
@@ -355,7 +411,7 @@ protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         final AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }*/
-        }
+}
 
 
 

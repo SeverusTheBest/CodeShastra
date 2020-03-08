@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="anirudhrocks.com.safetyapp">
 
+
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -28,7 +30,20 @@
             </intent-filter>
 
         </activity>
-        <service android:name=".VolumeKeyUp"/>
+
+        <!--<receiver-->
+            <!--android:name="com.klinker.android.send_message.SentReceiver"-->
+            <!--android:taskAffinity="[insert package name here].SMS_SENT"/>-->
+
+        <!--<receiver-->
+            <!--android:name="com.klinker.android.send_message.DeliveredReceiver"-->
+            <!--android:taskAffinity="[insert package name here].SMS_DELIVERED"/>-->
+
+        <!--&lt;!&ndash; Your custom receiver which is child of com.klinker.android.send_message.MmsSentReceiver &ndash;&gt;-->
+        <!--<receiver-->
+            <!--android:name="[insert your custom receiver here. eg. com.example.sms_mms.receivers.MyMmsSentReceiver]"-->
+            <!--android:taskAffinity="com.klinker.android.messaging.MMS_SENT"/>-->
+    <!--<service android:name="com.android.mms.transaction.TransactionService"/>-->
     </application>
     <uses-permission android:name="android.permission.CAMERA"> </uses-permission>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
@@ -36,5 +51,22 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--<uses-permission android:name="android.permission.CAMERA"/>-->
+    <!--<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />-->
+    <!--<uses-feature android:name="android.hardware.camera2.full" />-->
+    <!--<uses-permission android:name="android.permission.SEND_SMS"/>-->
+    <!--<uses-permission android:name="android.permission.READ_SMS" />-->
+    <!--<uses-permission android:name="android.permission.WRITE_SMS"/>-->
+    <!--<uses-permission android:name="android.permission.RECEIVE_SMS"/>-->
+    <!--<uses-permission android:name="android.permission.RECEIVE_MMS"/>-->
+    <!--<uses-permission android:name="android.permission.VIBRATE"/>-->
+    <!--<uses-permission android:name="android.provider.Telephony.SMS_RECEIVED" />-->
+    <!--<uses-permission android:name="android.permission.INTERNET" />-->
+    <!--<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />-->
+    <!--<uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />-->
+    <!--<uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />-->
+    <!--<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />-->
+    <!--<uses-permission android:name="android.permission.WRITE_SETTINGS" />-->
 
 </manifest>

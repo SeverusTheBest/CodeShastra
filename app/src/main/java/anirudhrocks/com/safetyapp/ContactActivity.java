@@ -67,6 +67,7 @@ import androidx.core.content.FileProvider;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -309,44 +310,53 @@ public class ContactActivity extends AppCompatActivity implements View.OnClickLi
 //            captureVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUriVid);
 //            startActivityForResult(captureVideoIntent, VIDEO_CAPTURED);
 
-            try {
+//            try {
                 System.out.println(outputFileUriImg.getPath()+"==============================");
-                FileInputStream in = new FileInputStream(new File(outputFileUriImg.getEncodedPath()));
-                Bitmap bMap = BitmapFactory.decodeStream(in);
+//                File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/picFolder/" + outputFileUriImg.getLastPathSegment());
+//                FileInputStream in = new FileInputStream(file);
+//                Bitmap bMap = BitmapFactory.decodeStream(in);
+
+                Bitmap bMap = BitmapFactory.decodeFile(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/picFolder/" + outputFileUriImg.getLastPathSegment());
+//                File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/picFolder/" + outputFileUriImg.getLastPathSegment());
+//                FileInputStream in = new FileInputStream(file);
 //                BufferedInputStream bf = new BufferedInputStream(in);
 //                byte[] bMapArray = new byte[bf.available()];
 //                bf.read(bMapArray);
 //                Bitmap bMap = BitmapFactory.decodeByteArray(bMapArray, 0, bMapArray.length);
-
                 System.out.println(bMap+"------------------------------");
+//            System.out.println(bMap.extractAlpha()+"------------------------------");
+//            for(int i=0; i<bMap.getNinePatchChunk().length; i++) {
+//                System.out.print(bMap.getNinePatchChunk()[i] & 0xff);
+//            }
+            System.out.println(Arrays.toString(bMap.getNinePatchChunk())+"------------------------------");
 
-                for (Contact contact : storedContacts) {
-                    String phoneNumber = contact.getPhoneNumber();
-                    try {
-                        SmsManager.getDefault().sendTextMessage(phoneNumber, null, "SMS! Please Help Me...  Image: "+bMap, null, null);
-                        //SmsManager.sendTextMessage(buffer.toString(), null, "I am in a emergency and I need HELP!\nI am currently not able to provide more information.\ni am at : http://maps.google.com/maps?q=" + geoLocation, null, null);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-//                        AlertDialog.Builder alertDialogBuilder = new
-//                                AlertDialog.Builder(ContactActivity.this);
-//                        AlertDialog dialog = alertDialogBuilder.create();
-//
-//                        dialog.setMessage(e.getMessage());
-//
-//                        dialog.show();
-                    }
-                }
+//                for (Contact contact : storedContacts) {
+//                    String phoneNumber = contact.getPhoneNumber();
+//                    try {
+//                        SmsManager.getDefault().sendTextMessage(phoneNumber, null, "SMS! Please Help Me...  Image: "+bMap, null, null);
+//                        //SmsManager.sendTextMessage(buffer.toString(), null, "I am in a emergency and I need HELP!\nI am currently not able to provide more information.\ni am at : http://maps.google.com/maps?q=" + geoLocation, null, null);
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+////                        AlertDialog.Builder alertDialogBuilder = new
+////                                AlertDialog.Builder(ContactActivity.this);
+////                        AlertDialog dialog = alertDialogBuilder.create();
+////
+////                        dialog.setMessage(e.getMessage());
+////
+////                        dialog.show();
+//                    }
+//                }
 //                Settings settings = new Settings();
 //                settings.setUseSystemSending(true);
 //                Transaction transaction = new Transaction(this, settings);
 //                Message message = new Message("Hello!!!!!!!", );
 //                message.setImage(mBitmap);
 //                transaction.sendNewMessage(message, Transaction.NO_THREAD_ID);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//            } catch (FileNotFoundException e) {
+//                e.printStackTrace();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
 //            SmsManager.getDefault().sendMultimediaMessage(this, outputFileUriImg, );
 
 

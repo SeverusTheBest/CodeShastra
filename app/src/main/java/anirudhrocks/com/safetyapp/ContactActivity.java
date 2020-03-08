@@ -1,69 +1,34 @@
 package anirudhrocks.com.safetyapp;
 
-import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
-
-//import android.support.v7.app.AppCompatActivity;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Camera;
-import android.graphics.ImageFormat;
-import android.graphics.SurfaceTexture;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraCaptureSession;
-import android.hardware.camera2.CameraCharacteristics;
-import android.hardware.camera2.CameraDevice;
-import android.hardware.camera2.CameraManager;
-import android.hardware.camera2.CameraMetadata;
-import android.hardware.camera2.CaptureRequest;
-import android.hardware.camera2.TotalCaptureResult;
-import android.hardware.camera2.params.StreamConfigurationMap;
-import android.media.Image;
-import android.media.ImageReader;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Message;
-import android.provider.Settings;
-import android.util.Size;
-import android.util.SparseIntArray;
-import android.view.Surface;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.telephony.SmsManager;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
-
-//-----------------------
-import android.location.LocationManager;
-import android.net.Uri;
-import android.os.CountDownTimer;
-import android.os.Environment;
-import android.provider.MediaStore;
-import android.telephony.SmsManager;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
-
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -75,9 +40,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-//import com.klinker.android.send_message.DeliveredReceiver;
-//import com.android.mms.transaction.TransactionService;
-//import com.klinker.android.send_message.SentReceiver;
 
 import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 
@@ -109,7 +71,8 @@ public class ContactActivity extends AppCompatActivity implements View.OnClickLi
     int TAKE_PHOTO_CODE = 0;
     public static int count = 0;
     private static final int REQUEST_LOCATION = 1;
-    LocationManager locationManager;
+    private LocationManager locationManager;
+    private LocationListener locationListener;
     String latitude, longitude;
 
     TextView text;
@@ -165,6 +128,7 @@ public class ContactActivity extends AppCompatActivity implements View.OnClickLi
         dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/picFolder/";
         File newdir = new File(dir);
         newdir.mkdirs();
+
     }
 
 
@@ -360,68 +324,42 @@ public class ContactActivity extends AppCompatActivity implements View.OnClickLi
 //            SmsManager.getDefault().sendMultimediaMessage(this, outputFileUriImg, );
 
 
-            Toast.makeText(this, "Volume Up Pressed", Toast.LENGTH_SHORT).show();
-            text.setText("hello world");
-            return true;
 
+            Toast.makeText(this, "Volume Up Pressed", Toast.LENGTH_SHORT).show();
+            return true;
         }
         return onKeyLongPress(keyCode, event);
     }
 
 
 
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//
+//        if (requestCode == TAKE_PHOTO_CODE && resultCode == RESULT_OK) {
+//            Log.d("CameraDemo", "Pic saved");
+//        }
+//    }
 
-/*
-    private void getLocation() {
-
-        if (ActivityCompat.checkSelfPermission(
-                ContactActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                ContactActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
-        } else {
-            Location locationGPS = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            if (locationGPS != null) {
-                double lat = locationGPS.getLatitude();
-                double longi = locationGPS.getLongitude();
-                latitude = String.valueOf(lat);
-                longitude = String.valueOf(longi);
-                text.setText("Your Location: " + "\n" + "Latitude: " + latitude + "\n" + "Longitude: " + longitude);
-            } else {
-                Toast.makeText(this, "Unable to find location.", Toast.LENGTH_SHORT).show();
-            }
-        }
-
-
-    }
-    */
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == TAKE_PHOTO_CODE && resultCode == RESULT_OK) {
-            Log.d("CameraDemo", "Pic saved");
-        }
-    }
-
-/*
-    private void OnGPS() {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Enable GPS").setCancelable(false).setPositiveButton("Yes", new  DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-            }
-        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-        final AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-    }*/
+//    private void OnGPS() {
+//        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//        builder.setMessage("Enable GPS").setCancelable(false).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+//            }
+//        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                dialog.cancel();
+//            }
+//        });
+//        final AlertDialog alertDialog = builder.create();
+//        alertDialog.show();
+//    }
 }
+
 
 
 
@@ -463,4 +401,15 @@ lol
                         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
 
-                        startActivityForResult(cameraIntent, TAKE_PHOTO_CODE)*/
+                        startActivityForResult(cameraIntent, TAKE_PHOTO_CODE)
+
+
+                         public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            event.startTracking();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+                        */
